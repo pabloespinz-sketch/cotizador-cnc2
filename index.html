@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="CNC Cotizador"/>
+<meta name="theme-color" content="#a07830"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Cotizador Paneles CNC</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f1;--surface:#fff;--surface2:#f9f8f6;
+  --border:#e2e0db;--border2:#d0cdc7;
+  --text:#1a1916;--text2:#706e68;--text3:#aaa89f;
+  --accent:#a07830;--accent2:#c49a40;
+  --danger:#b84040;--info:#3060a0;
+  --sans:system-ui,sans-serif;--mono:monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;padding:1.5rem 1rem 5rem}
+.container{max-width:640px;margin:0 auto}
+header{margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+h1{font-size:20px;font-weight:600;letter-spacing:-0.02em;margin-bottom:3px}
+.tagline{font-size:12px;color:var(--text3);font-family:var(--mono)}
+.lam-ref{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.lam-pill{font-size:11px;font-family:var(--mono);padding:3px 9px;border-radius:4px;border:1px solid var(--border2);color:var(--text2);background:var(--surface);display:flex;gap:6px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot-big{background:var(--info)}.dot-small{background:var(--accent)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1rem}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.field label{font-size:12px;color:var(--text2);font-family:var(--mono)}
+input{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:15px;font-family:var(--sans);color:var(--text);width:100%;transition:border-color .15s}
+input:focus{outline:none;border-color:var(--accent)}
+input.error{border-color:var(--danger)}
+input::placeholder{color:var(--text3)}
+.dim-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.add-btn{width:100%;padding:11px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:13px;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.add-btn:hover{background:var(--bg);color:var(--text);border-color:var(--accent)}
+
+.piece-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);gap:8px}
+.piece-row:last-child{border-bottom:none}
+.piece-name{font-size:13px;color:var(--text);font-weight:500}
+.piece-dim{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px}
+.piece-badge{font-size:10px;font-family:var(--mono);padding:2px 6px;border-radius:3px;margin-top:4px;display:inline-block}
+.badge-multi{background:#fef3e2;color:#a06010;border:1px solid #e8d0a0}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.del-btn:hover{background:#fce8e8;color:var(--danger)}
+.empty-state{text-align:center;padding:1.5rem 0;color:var(--text3);font-family:var(--mono);font-size:12px}
+
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-top:1rem}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.metric{background:var(--surface2);border-radius:8px;padding:10px 12px;border:1px solid var(--border)}
+.metric-label{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px}
+.metric-val{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--text)}
+.divider{border:none;border-top:1px solid var(--border);margin:0 0 1rem}
+.total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:1.25rem}
+.total-label{font-size:12px;color:var(--text2);font-family:var(--mono)}
+.total-val{font-size:28px;font-weight:600;font-family:var(--mono);color:var(--accent)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+
+.clear-btn{padding:11px;background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--text3);font-size:13px;font-family:var(--mono);cursor:pointer}
+.clear-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+.sheets-section{margin-top:1rem}
+.sec-title{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem}
+.sheet-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.sheet-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;gap:8px}
+.sheet-label{font-size:13px;font-weight:600;color:var(--text)}
+.sheet-sub{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px}
+.sheet-tag{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:4px;font-weight:500;flex-shrink:0}
+.sheet-tag-big{background:#ddeaf8;color:var(--info);border:1px solid #b8d0ee}
+.sheet-tag-small{background:#f5ecd8;color:var(--accent);border:1px solid #e0d0a8}
+.canvas-wrap{width:100%;overflow-x:auto}
+
+.mode-tabs{display:flex;gap:0;margin-bottom:1rem;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+.mode-tab{flex:1;padding:9px;background:transparent;border:none;font-size:12px;font-family:var(--mono);color:var(--text2);cursor:pointer;transition:all .15s}
+.mode-tab.active{background:var(--accent);color:#fff}
+.mode-panel{display:none}
+.mode-panel.active{display:block}
+textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:13px;font-family:var(--mono);color:var(--text);width:100%;resize:vertical;min-height:120px;transition:border-color .15s;line-height:1.6}
+textarea:focus{outline:none;border-color:var(--accent)}
+textarea::placeholder{color:var(--text3)}
+.parse-result{font-size:11px;font-family:var(--mono);color:var(--text2);margin-top:8px;min-height:16px}
+.parse-ok{color:#507840}
+.parse-err{color:var(--danger)}
+canvas{border:1px solid var(--border2);border-radius:6px;display:block;max-width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);font-family:var(--mono)}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+.info-box{background:#f0f6ff;border:1px solid #b8d0ee;border-radius:8px;padding:10px 14px;font-size:12px;color:#3060a0;font-family:var(--mono);margin-bottom:10px;display:none;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Cotizador de Paneles CNC</h1>
+  <div class="tagline">fabricacion en metal · corte laser</div>
+  <div class="lam-ref">
+    <div class="lam-pill"><span class="dot dot-small"></span>100×200 cm — ₡90.000</div>
+    <div class="lam-pill"><span class="dot dot-big"></span>122×244 cm — ₡110.000</div>
+  </div>
+</header>
+
+<div class="card">
+  <div class="card-title">agregar piezas al proyecto</div>
+  <div class="info-box" id="info-box"></div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('single')">una por una</button>
+    <button class="mode-tab" onclick="setMode('bulk')">pegar lista</button>
+  </div>
+
+  <div class="mode-panel active" id="mode-single">
+    <div class="field">
+      <label>nombre</label>
+      <input type="text" id="pname" placeholder="Porton garage" autocomplete="off"/>
+    </div>
+    <div class="dim-row">
+      <div class="field" style="margin-bottom:0">
+        <label>ancho (cm)</label>
+        <input type="number" id="pancho" placeholder="400" min="1" step="0.1" inputmode="decimal"/>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>alto (cm)</label>
+        <input type="number" id="palto" placeholder="200" min="1" step="0.1" inputmode="decimal"/>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>cantidad</label>
+        <input type="number" id="pcant" value="1" min="1" inputmode="numeric"/>
+      </div>
+    </div>
+    <br>
+    <button class="add-btn" onclick="addPiece()">+ agregar pieza</button>
+  </div>
+
+  <div class="mode-panel" id="mode-bulk">
+    <div class="field">
+      <label>pegar lista de piezas</label>
+      <textarea id="bulk-text" placeholder="1 pieza 106x180 cm, 3 piezas 162.3x95 cm&#10;1 pieza 181x95, 2 piezas 173.5x95 cm&#10;&#10;Tambien funciona una por linea o separado por comas."></textarea>
+    </div>
+    <div class="parse-result" id="parse-result"></div>
+    <br>
+    <button class="add-btn" onclick="addBulk()">+ agregar todas las piezas</button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">piezas del proyecto</div>
+  <div id="piece-list"><div class="empty-state">sin piezas todavia</div></div>
+</div>
+
+<div id="result-box" style="display:none">
+  <div class="result-card">
+    <div class="card-title" style="margin-bottom:1rem">resumen</div>
+    <div class="summary-grid">
+      <div class="metric"><div class="metric-label">láminas 122×244</div><div class="metric-val" id="r-big">0</div></div>
+      <div class="metric"><div class="metric-label">láminas 100×200</div><div class="metric-val" id="r-small">0</div></div>
+      <div class="metric"><div class="metric-label">piezas totales</div><div class="metric-val" id="r-items">0</div></div>
+    </div>
+    <hr class="divider"/>
+    <div class="total-row">
+      <span class="total-label">total del proyecto</span>
+      <span class="total-val" id="r-total">₡0</span>
+    </div>
+    <div class="btn-row" style="grid-template-columns:1fr">
+      <button class="clear-btn" onclick="clearAll()">limpiar todo</button>
+    </div>
+  </div>
+  <div class="sheets-section" id="sheets-section"></div>
+</div>
+
+</div>
+<script>
+const SM  = {id:'small', w:100, h:200, price:90000,  label:'100×200 cm'};
+const BIG = {id:'big',   w:122, h:244, price:110000, label:'122×244 cm'};
+const COLORS = ['#4e8fc7','#e07b3a','#5aaa6e','#c75050','#9b6ec7','#c7a23a','#3aaac7','#c75e8f','#7ac75a','#c7773a'];
+
+let pieces = [];
+let lastResult = null;
+
+// ── Para una pieza de w×h, calcula la opción óptima en un tipo de lámina ──
+// Prueba orientación normal y rotada, devuelve la que usa menos láminas
+function bestSectionForSheet(pw, ph, sheet) {
+  const opts = [];
+  for (const [w, h] of [[pw, ph], [ph, pw]]) {
+    const cols = Math.ceil(w / sheet.w);
+    const rows = Math.ceil(h / sheet.h);
+    opts.push({ cols, rows, total: cols * rows, cost: cols * rows * sheet.price, rotated: w !== pw, usedW: w, usedH: h });
+  }
+  return opts.sort((a, b) => a.cost - b.cost)[0];
+}
+
+// ── Para una pieza, compara SM vs BIG y devuelve la opción más barata ──
+function bestSheetForPiece(pw, ph) {
+  const optSM  = bestSectionForSheet(pw, ph, SM);
+  const optBIG = bestSectionForSheet(pw, ph, BIG);
+  optSM.sheet  = SM;
+  optBIG.sheet = BIG;
+  return optSM.cost <= optBIG.cost ? optSM : optBIG;
+}
+
+// ── Maximal Rectangles bin packing ───────────────────────────
+function packSheetMR(remaining, sheet) {
+  const sorted = [...remaining].sort((a, b) => b.fw * b.fh - a.fw * a.fh);
+  const placements = [];
+  let freeRects = [{ x: 0, y: 0, w: sheet.w, h: sheet.h }];
+  const unpacked = [];
+
+  for (const item of sorted) {
+    let bestScore = Infinity, bestRect = -1, bestW = 0, bestH = 0;
+    const orients = [[item.fw, item.fh], [item.fh, item.fw]].filter(([w, h]) => w <= sheet.w && h <= sheet.h);
+    for (let ri = 0; ri < freeRects.length; ri++) {
+      const fr = freeRects[ri];
+      for (const [pw, ph] of orients) {
+        if (pw <= fr.w && ph <= fr.h) {
+          const score = Math.min(fr.w - pw, fr.h - ph);
+          if (score < bestScore) { bestScore = score; bestRect = ri; bestW = pw; bestH = ph; }
+        }
+      }
+    }
+    if (bestRect >= 0) {
+      const fr = freeRects[bestRect];
+      placements.push({ pi: item.pi, name: item.name, x: fr.x, y: fr.y, w: bestW, h: bestH });
+      const newFree = [];
+      for (const r of freeRects) {
+        const ox = Math.max(fr.x, r.x), oy = Math.max(fr.y, r.y);
+        const ox2 = Math.min(fr.x + bestW, r.x + r.w), oy2 = Math.min(fr.y + bestH, r.y + r.h);
+        if (ox < ox2 && oy < oy2) {
+          if (r.x < fr.x)                newFree.push({ x: r.x,         y: r.y,         w: fr.x - r.x,              h: r.h });
+          if (r.x + r.w > fr.x + bestW)  newFree.push({ x: fr.x + bestW,y: r.y,         w: r.x+r.w-fr.x-bestW,     h: r.h });
+          if (r.y < fr.y)                newFree.push({ x: r.x,         y: r.y,         w: r.w, h: fr.y - r.y });
+          if (r.y + r.h > fr.y + bestH)  newFree.push({ x: r.x,         y: fr.y + bestH,w: r.w, h: r.y+r.h-fr.y-bestH });
+        } else {
+          newFree.push(r);
+        }
+      }
+      freeRects = newFree.filter((r, i) =>
+        r.w > 0.5 && r.h > 0.5 &&
+        !newFree.some((r2, j) => i !== j && r2.x<=r.x && r2.y<=r.y && r2.x+r2.w>=r.x+r.w && r2.y+r2.h>=r.y+r.h)
+      );
+    } else {
+      unpacked.push(item);
+    }
+  }
+  return { placements, unpacked, usedArea: placements.reduce((s, p) => s + p.w * p.h, 0), sheetArea: sheet.w * sheet.h };
+}
+
+function packAll(items, sheet) {
+  const sheets = [];
+  let remaining = [...items];
+  while (remaining.length > 0) {
+    const result = packSheetMR(remaining, sheet);
+    const usedArea = result.placements.reduce((s, p) => s + p.w * p.h, 0);
+    sheets.push({ ...result, sheet, usedArea, sheetArea: sheet.w * sheet.h });
+    if (result.unpacked.length === remaining.length) {
+      // Atascado: nueva lamina dedicada para esta pieza
+      const item = remaining[0];
+      const pw = item.fw <= sheet.w ? item.fw : item.fh;
+      const ph = item.fw <= sheet.w ? item.fh : item.fw;
+      sheets.push({
+        sheet,
+        placements: [{ pi: item.pi, name: item.name, x: 0, y: 0, w: pw, h: ph }],
+        usedArea: pw * ph,
+        sheetArea: sheet.w * sheet.h,
+      });
+      remaining = remaining.slice(1);
+    } else {
+      remaining = result.unpacked;
+    }
+  }
+  return sheets;
+}
+
+// Bajar láminas BIG a SM cuando todas sus piezas caben en SM y es más barato
+function demoteBigToSm(sheets) {
+  return sheets.map(s => {
+    if (s.sheet.id !== 'big') return s;
+    // Verificar si TODAS las piezas de esta lámina BIG caben en SM
+    const allFitSM = s.placements.every(p =>
+      (p.w <= SM.w && p.h <= SM.h) || (p.h <= SM.w && p.w <= SM.h)
+    );
+    if (!allFitSM) return s; // alguna pieza no cabe en SM → mantener en BIG
+    // Intentar empacarlas en 1 SM
+    const items = s.placements.map(p => ({ pi: p.pi, name: p.name, fw: p.w, fh: p.h }));
+    const result = packSheetMR(items, SM);
+    if (result.unpacked.length === 0 && SM.price < BIG.price) {
+      // Todas caben en 1 SM y es más barato → bajar a SM
+      const usedArea = result.placements.reduce((a, p) => a + p.w * p.h, 0);
+      return { ...result, sheet: SM, usedArea, sheetArea: SM.w * SM.h };
+    }
+    return s;
+  });
+}
+
+// Fusionar laminas SM en BIG cuando sea mas barato
+// Evalua todas las combinaciones posibles (pares, trios, etc.)
+function mergeSmSheetsToBig(sheets) {
+  let smSheets   = sheets.filter(s => s.sheet.id === 'small');
+  const bigSheets = sheets.filter(s => s.sheet.id === 'big');
+
+  let improved = true;
+  while (improved) {
+    improved = false;
+
+    // Intentar fusionar grupos de 2, 3 y 4 laminas SM en 1 BIG
+    for (let groupSize = 2; groupSize <= Math.min(4, smSheets.length); groupSize++) {
+      const found = tryMergeGroup(smSheets, bigSheets, groupSize);
+      if (found) { smSheets = found.newSM; bigSheets.push(found.merged); improved = true; break; }
+    }
+  }
+  return [...smSheets, ...bigSheets];
+}
+
+function tryMergeGroup(smSheets, bigSheets, size) {
+  // Generar todas las combinaciones de `size` laminas SM
+  const combos = getCombinations(smSheets.length, size);
+  for (const indices of combos) {
+    const costSM = indices.length * SM.price;
+    const allPlacements = indices.flatMap(i => smSheets[i].placements);
+    const items = allPlacements.map(p => ({ pi: p.pi, name: p.name, fw: p.w, fh: p.h }));
+    const result = packSheetMR(items, BIG);
+    if (result.unpacked.length === 0 && BIG.price < costSM) {
+      // Caben todas en 1 BIG y es mas barato
+      const usedArea = result.placements.reduce((s, p) => s + p.w * p.h, 0);
+      return {
+        merged: { ...result, sheet: BIG, usedArea, sheetArea: BIG.w * BIG.h },
+        newSM: smSheets.filter((_, i) => !indices.includes(i)),
+      };
+    }
+  }
+  return null;
+}
+
+function getCombinations(n, k) {
+  const result = [];
+  const combo = [];
+  function helper(start) {
+    if (combo.length === k) { result.push([...combo]); return; }
+    for (let i = start; i < n; i++) { combo.push(i); helper(i + 1); combo.pop(); }
+  }
+  helper(0);
+  return result;
+}
+
+// ── Cálculo principal ─────────────────────────────────────────
+function calcBestOption(pieces) {
+  // Paso 1: expandir piezas oversized en sub-piezas iguales
+  // Una pieza de 400x95 con laminas SM de 100x200:
+  //   → 4 sub-piezas de 100x95, cada una cabe en 1 SM
+  // Esto permite que entren al bin packing general junto con las demás
+
+  const allItems   = []; // items normales para bin packing
+  const oversizedMeta = []; // para el diagrama: info de secciones
+
+  pieces.forEach((p, pi) => {
+    for (let q = 0; q < p.qty; q++) {
+      const fitsSM  = (p.w <= SM.w  && p.h <= SM.h)  || (p.h <= SM.w  && p.w <= SM.h);
+      const fitsBIG = (p.w <= BIG.w && p.h <= BIG.h) || (p.h <= BIG.w && p.w <= BIG.h);
+
+      if (fitsSM || fitsBIG) {
+        // Pieza normal: entra directa al bin packing
+        allItems.push({ pi, name: p.name, fw: p.w, fh: p.h, isSection: false });
+      } else {
+        // Pieza oversized: calcular mejor tipo de lamina y dividir en sub-piezas iguales
+        const best = bestSheetForPiece(p.w, p.h);
+        const pieceW = best.rotated ? p.h : p.w;
+        const pieceH = best.rotated ? p.w : p.h;
+        const secW = Math.round((pieceW / best.cols) * 10) / 10;
+        const secH = Math.round((pieceH / best.rows) * 10) / 10;
+        oversizedMeta.push({ pi, name: p.name, w: p.w, h: p.h, best, secW, secH, q });
+        for (let r = 0; r < best.rows; r++) {
+          for (let c = 0; c < best.cols; c++) {
+            allItems.push({
+              pi,
+              name: p.name,
+              fw: secW,
+              fh: secH,
+              isSection: true,
+              sectionLabel: `${p.name} ${c+1}x${r+1}/${best.cols}x${best.rows}`,
+              forcedSheet: best.sheet, // esta sub-pieza DEBE ir en este tipo de lamina
+            });
+          }
+        }
+      }
+    }
+  });
+
+  // Paso 2: separar items por tipo de lamina forzada vs libre
+  const forcedBIG = allItems.filter(i => i.forcedSheet && i.forcedSheet.id === 'big');
+  const forcedSM  = allItems.filter(i => i.forcedSheet && i.forcedSheet.id === 'small');
+  const freeSM    = allItems.filter(i => !i.forcedSheet && ((i.fw<=SM.w&&i.fh<=SM.h)||(i.fh<=SM.w&&i.fw<=SM.h)));
+  const freeBIG   = allItems.filter(i => !i.forcedSheet && !((i.fw<=SM.w&&i.fh<=SM.h)||(i.fh<=SM.w&&i.fw<=SM.h)));
+
+  // Paso 3: evaluar múltiples estrategias y elegir la de menor costo
+
+  function evalStrategy(smItems, bigItems) {
+    const pSM  = smItems.length  ? packAll(smItems,  SM)  : [];
+    const pBIG = bigItems.length ? packAll(bigItems, BIG) : [];
+    const merged = mergeSmSheetsToBig([
+      ...pSM.map(s  => ({ ...s, sheet: SM  })),
+      ...pBIG.map(s => ({ ...s, sheet: BIG })),
+    ]);
+    const cost = merged.filter(s => s.sheet.id === 'small').length * SM.price
+               + merged.filter(s => s.sheet.id === 'big').length   * BIG.price;
+    return { merged, cost };
+  }
+
+  // Estrategia A: freeSM -> SM, freeBIG+forced -> BIG (orden normal)
+  const strA = evalStrategy([...freeSM, ...forcedSM], [...freeBIG, ...forcedBIG]);
+
+  // Estrategia B: todo en BIG
+  let strB = { merged: [], cost: Infinity };
+  if (forcedSM.length === 0) {
+    const allBIG = [...freeSM, ...freeBIG, ...forcedBIG];
+    const pB = allBIG.length ? packAll(allBIG, BIG) : [];
+    strB = { merged: pB.map(s => ({ ...s, sheet: BIG })), cost: pB.length * BIG.price };
+  }
+
+  // Estrategia C: separar freeSM en grandes (>50% SM) y pequeñas (<50% SM)
+  // Empacar grandes primero, luego pequeñas en sus propias láminas
+  // Esto permite que el merge fusione mejor los grupos de piezas pequeñas
+  const smArea = SM.w * SM.h;
+  const freeSM_large = freeSM.filter(i => i.fw * i.fh > smArea * 0.45);
+  const freeSM_small = freeSM.filter(i => i.fw * i.fh <= smArea * 0.45);
+  let strC = { merged: [], cost: Infinity };
+  if (freeSM_large.length !== freeSM.length && freeSM_small.length > 0) {
+    const pLarge = freeSM_large.length ? packAll([...freeSM_large, ...forcedSM], SM) : [];
+    const pSmall = freeSM_small.length ? packAll(freeSM_small, SM) : [];
+    const pBIG_c = [...freeBIG, ...forcedBIG].length ? packAll([...freeBIG, ...forcedBIG], BIG) : [];
+    const mergedC = mergeSmSheetsToBig([
+      ...pLarge.map(s => ({ ...s, sheet: SM })),
+      ...pSmall.map(s => ({ ...s, sheet: SM })),
+      ...pBIG_c.map(s => ({ ...s, sheet: BIG })),
+    ]);
+    strC = {
+      merged: mergedC,
+      cost: mergedC.filter(s => s.sheet.id === 'small').length * SM.price
+          + mergedC.filter(s => s.sheet.id === 'big').length   * BIG.price,
+    };
+  }
+
+  // Elegir la estrategia de menor costo
+  const best = [strA, strB, strC].reduce((a, b) => a.cost <= b.cost ? a : b);
+  let packedSheets = best.merged;
+  let totalSmall = packedSheets.filter(s => s.sheet.id === 'small').length;
+  let totalBig   = packedSheets.filter(s => s.sheet.id === 'big').length;
+
+  // Paso 4a: bajar láminas BIG a SM si todas sus piezas caben en SM y es más barato
+  packedSheets = demoteBigToSm(packedSheets);
+  // Paso 4b: fusionar grupos de SM en BIG si es más barato
+  packedSheets = mergeSmSheetsToBig(packedSheets);
+  // Recalcular totales reales
+  totalSmall = packedSheets.filter(s => s.sheet.id === 'small').length;
+  totalBig   = packedSheets.filter(s => s.sheet.id === 'big').length;
+
+  // Marcar laminas de secciones oversized para el diagrama
+  packedSheets.forEach(s => {
+    s.placements.forEach(pl => {
+      const item = allItems.find(i => i.pi === pl.pi && i.isSection);
+      if (item) pl.sectionLabel = item.sectionLabel;
+    });
+  });
+
+  const total = totalSmall * SM.price + totalBig * BIG.price;
+
+  return { allSheets: packedSheets, totalBig, totalSmall, total };
+}
+
+// ── UI ────────────────────────────────────────────────────────
+function fmt(n) { return '₡' + Math.round(n).toLocaleString('es-CR'); }
+
+function addPiece() {
+  const name = document.getElementById('pname').value.trim() || 'Pieza';
+  const wEl  = document.getElementById('pancho');
+  const hEl  = document.getElementById('palto');
+  const w    = parseFloat(wEl.value);
+  const h    = parseFloat(hEl.value);
+  const qty  = parseInt(document.getElementById('pcant').value) || 1;
+
+  if (!w || !h || w <= 0 || h <= 0) {
+    [wEl, hEl].forEach(el => { if (!parseFloat(el.value)) { el.classList.add('error'); setTimeout(() => el.classList.remove('error'), 1400); } });
+    return;
+  }
+
+  // Mostrar aviso con comparación si es oversized
+  const infoBox = document.getElementById('info-box');
+  const fitsSM  = (w <= SM.w && h <= SM.h) || (h <= SM.w && w <= SM.h);
+  const fitsBIG = (w <= BIG.w && h <= BIG.h) || (h <= BIG.w && w <= BIG.h);
+
+  if (!fitsSM && !fitsBIG) {
+    const optSM  = bestSectionForSheet(w, h, SM);
+    const optBIG = bestSectionForSheet(w, h, BIG);
+    optSM.sheet = SM; optBIG.sheet = BIG;
+    const chosen = optSM.cost <= optBIG.cost ? optSM : optBIG;
+    const other  = optSM.cost <= optBIG.cost ? optBIG : optSM;
+    const cPW = chosen.rotated ? h : w, cPH = chosen.rotated ? w : h;
+    const oPW = other.rotated  ? h : w, oPH = other.rotated  ? w : h;
+    infoBox.innerHTML =
+      `Pieza grande (${w}x${h} cm)<br>` +
+      `${chosen.sheet.label}: ceil(${cPW}/${chosen.sheet.w}) x ceil(${cPH}/${chosen.sheet.h}) = ${chosen.cols}x${chosen.rows} = <strong>${chosen.total} laminas -> ${fmt(chosen.cost)}</strong> MEJOR<br>` +
+      `${other.sheet.label}: ceil(${oPW}/${other.sheet.w}) x ceil(${oPH}/${other.sheet.h}) = ${other.cols}x${other.rows} = ${other.total} laminas -> ${fmt(other.cost)}`;
+    infoBox.style.display = 'block';
+    requestAnimationFrame(() => { infoBox.style.display = 'none'; }, 6000);
+  } else if (!fitsSM && fitsBIG) {
+    infoBox.textContent = `Solo cabe en lámina 122×244 cm`;
+    infoBox.style.display = 'block';
+    setTimeout(() => { infoBox.style.display = 'none'; }, 3000);
+  } else {
+    infoBox.style.display = 'none';
+  }
+
+  pieces.push({ name, w, h, qty });
+  document.getElementById('pname').value = '';
+  wEl.value = ''; hEl.value = '';
+  document.getElementById('pcant').value = '1';
+  document.getElementById('pname').focus();
+  recalculate();
+}
+
+function removePiece(i) { pieces.splice(i, 1); recalculate(); }
+function clearAll() { pieces = []; document.getElementById('bulk-text') && (document.getElementById('bulk-text').value=''); recalculate(); }
+
+function recalculate() {
+  renderPieceList();
+  if (!pieces.length) {
+    document.getElementById('result-box').style.display = 'none';
+    lastResult = null;
+    return;
+  }
+  const result = calcBestOption(pieces);
+  lastResult = result;
+  const totalQty = pieces.reduce((s, p) => s + p.qty, 0);
+  document.getElementById('r-big').textContent   = result.totalBig;
+  document.getElementById('r-small').textContent = result.totalSmall;
+  document.getElementById('r-items').textContent = totalQty;
+  document.getElementById('r-total').textContent = fmt(result.total);
+  document.getElementById('result-box').style.display = 'block';
+  renderSheetDiagrams(result.allSheets);
+}
+
+function renderPieceList() {
+  const el = document.getElementById('piece-list');
+  if (!pieces.length) { el.innerHTML = '<div class="empty-state">sin piezas todavia</div>'; return; }
+  el.innerHTML = pieces.map((p, i) => {
+    const fitsSM  = (p.w <= SM.w  && p.h <= SM.h)  || (p.h <= SM.w  && p.w <= SM.h);
+    const fitsBIG = (p.w <= BIG.w && p.h <= BIG.h) || (p.h <= BIG.w && p.w <= BIG.h);
+    let badge = '';
+    if (!fitsSM && !fitsBIG) {
+      const best = bestSheetForPiece(p.w, p.h);
+      badge = `<span class="piece-badge badge-multi">${best.total} láminas ${best.sheet.label}</span>`;
+    } else if (!fitsSM) {
+      badge = `<span class="piece-badge badge-multi">solo en 122×244</span>`;
+    }
+    return `<div class="piece-row">
+      <div>
+        <div class="piece-name">${p.name} <span style="color:var(--text2);font-size:12px">×${p.qty}</span></div>
+        <div class="piece-dim">${p.w}×${p.h} cm</div>
+        ${badge}
+      </div>
+      <button class="del-btn" onclick="removePiece(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+// ── Diagramas canvas ──────────────────────────────────────────
+function renderSheetDiagrams(allSheets) {
+  const sec = document.getElementById('sheets-section');
+  sec.innerHTML = '';
+  if (!allSheets.length) return;
+  const colorMap = {};
+  pieces.forEach((p, i) => { colorMap[i] = COLORS[i % COLORS.length]; });
+
+  const title = document.createElement('div');
+  title.className = 'sec-title';
+  title.textContent = 'distribucion en láminas';
+  sec.appendChild(title);
+
+  allSheets.forEach((s, si) => {
+    const block = document.createElement('div');
+    block.className = 'sheet-block';
+    const usedA = s.usedArea || s.placements.reduce((sum, p) => sum + p.w * p.h, 0);
+    const sheetA = s.sheetArea || s.sheet.w * s.sheet.h;
+    const eff = Math.round(usedA / sheetA * 100);
+    const tagClass = s.sheet.id === 'big' ? 'sheet-tag-big' : 'sheet-tag-small';
+    const headerLabel = s.isSection ? s.sectionLabel : `Lámina ${si + 1}`;
+    // Pre-calcular dimensiones del canvas con ancho fijo de referencia
+    const preScale = 460 / s.sheet.w;
+    const preH = Math.round(s.sheet.h * preScale);
+    block.innerHTML = `
+      <div class="sheet-header">
+        <div>
+          <div class="sheet-label">${headerLabel}</div>
+          <div class="sheet-sub">${s.sheet.label} · ${eff}% aprovechado · ${fmt(s.sheet.price)}</div>
+        </div>
+        <span class="sheet-tag ${tagClass}">${s.sheet.label}</span>
+      </div>
+      <div class="canvas-wrap"><canvas id="cv-${si}" width="460" height="${preH}"></canvas></div>
+      <div class="legend" id="lg-${si}"></div>`;
+    sec.appendChild(block);
+
+    requestAnimationFrame(() => {
+      const canvas = document.getElementById(`cv-${si}`);
+      if (!canvas) return;
+      // Usar ancho del bloque o fallback a 480px si aún no está renderizado
+      const blockW = block.getBoundingClientRect().width || block.offsetWidth || 520;
+      const maxW = Math.min(blockW - 40, 480);
+      const scale = maxW / s.sheet.w;
+      canvas.width  = Math.round(s.sheet.w * scale);
+      canvas.height = Math.round(s.sheet.h * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#f8f7f4';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#e5e3de'; ctx.lineWidth = 0.5;
+      for (let x = 0; x <= s.sheet.w; x += 10) { ctx.beginPath(); ctx.moveTo(x * scale, 0); ctx.lineTo(x * scale, canvas.height); ctx.stroke(); }
+      for (let y = 0; y <= s.sheet.h; y += 10) { ctx.beginPath(); ctx.moveTo(0, y * scale); ctx.lineTo(canvas.width, y * scale); ctx.stroke(); }
+      const legendItems = {};
+      s.placements.forEach(pl => {
+        const color = colorMap[pl.pi] || '#888';
+        ctx.fillStyle = color + 'cc';
+        ctx.fillRect(pl.x * scale, pl.y * scale, pl.w * scale, pl.h * scale);
+        ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+        ctx.strokeRect(pl.x * scale, pl.y * scale, pl.w * scale, pl.h * scale);
+        const tw = pl.w * scale, th = pl.h * scale;
+        if (tw > 28 && th > 14) {
+          ctx.fillStyle = '#fff';
+          ctx.font = `bold ${Math.min(11, th / 2.8)}px monospace`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(`${pl.w}×${pl.h}`, pl.x * scale + tw / 2, pl.y * scale + th / 2);
+        }
+        legendItems[pl.pi] = { name: pl.name, color };
+      });
+      ctx.strokeStyle = '#b0adb8'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      const lgEl = document.getElementById(`lg-${si}`);
+      if (lgEl) lgEl.innerHTML = Object.entries(legendItems).map(([, v]) =>
+        `<div class="legend-item"><div class="legend-dot" style="background:${v.color}"></div>${v.name}</div>`).join('');
+    });
+  });
+}
+
+
+// ── Tabs de modo ─────────────────────────────────────────────
+function setMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0) === (mode === 'single'));
+  });
+  document.getElementById('mode-single').classList.toggle('active', mode === 'single');
+  document.getElementById('mode-bulk').classList.toggle('active', mode === 'bulk');
+  document.getElementById('parse-result').textContent = '';
+}
+
+// ── Parser de lista de piezas ─────────────────────────────────
+function parseBulk(text) {
+  const results = [];
+  const pattern = /(\d+)\s*piezas?\s+(?:de\s+)?([\d.,]+)\s*[x×]\s*([\d.,]+)(?:\s*cm)?/gi;
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    const qty = parseInt(match[1]);
+    const w   = parseFloat(match[2].replace(',', '.'));
+    const h   = parseFloat(match[3].replace(',', '.'));
+    if (qty > 0 && w > 0 && h > 0) results.push({ name: `Pieza ${w}×${h}`, w, h, qty });
+  }
+  if (!results.length) {
+    const dimPattern = /([\d.,]+)\s*[x×]\s*([\d.,]+)/gi;
+    let i = 1;
+    while ((match = dimPattern.exec(text)) !== null) {
+      const w = parseFloat(match[1].replace(',', '.'));
+      const h = parseFloat(match[2].replace(',', '.'));
+      if (w > 0 && h > 0) { results.push({ name: `Pieza ${i}`, w, h, qty: 1 }); i++; }
+    }
+  }
+  return { results };
+}
+
+function addBulk() {
+  const text = document.getElementById('bulk-text').value.trim();
+  const resEl = document.getElementById('parse-result');
+  if (!text) { resEl.textContent = 'Escribí o pega las medidas primero.'; resEl.className = 'parse-result parse-err'; return; }
+  const { results } = parseBulk(text);
+  if (!results.length) {
+    resEl.textContent = 'No se encontraron medidas. Usá el formato: 2 piezas 80x120 cm';
+    resEl.className = 'parse-result parse-err';
+    return;
+  }
+  results.forEach(r => pieces.push(r));
+  document.getElementById('bulk-text').value = '';
+  resEl.textContent = `${results.length} tipo${results.length > 1 ? 's' : ''} de pieza agregado${results.length > 1 ? 's' : ''}.`;
+  resEl.className = 'parse-result parse-ok';
+  setTimeout(() => { resEl.textContent = ''; }, 3000);
+  recalculate();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ta = document.getElementById('bulk-text');
+  const resEl = document.getElementById('parse-result');
+  if (ta) {
+    ta.addEventListener('input', () => {
+      const text = ta.value.trim();
+      if (!text) { resEl.textContent = ''; return; }
+      const { results } = parseBulk(text);
+      if (results.length) {
+        resEl.textContent = `Se detectan ${results.reduce((s,r)=>s+r.qty,0)} piezas en ${results.length} grupo${results.length>1?'s':''}.`;
+        resEl.className = 'parse-result parse-ok';
+      } else {
+        resEl.textContent = 'No se detectan medidas aún...';
+        resEl.className = 'parse-result parse-err';
+      }
+    });
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && ['pname','pancho','palto','pcant'].includes(document.activeElement?.id)) addPiece();
+});
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw2.js').catch(() => {});
+}
+</script>
+</body>
+</html>
