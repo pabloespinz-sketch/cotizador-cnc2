@@ -1,9 +1,11 @@
-const CACHE_NAME = 'cnc-cotizador-v3';
+const CACHE_NAME = 'cnc-cotizador-v4';
+const BASE = '/cotizador-cnc';
 const URLS_TO_CACHE = [
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  BASE + '/',
+  BASE + '/index.html',
+  BASE + '/manifest.json',
+  BASE + '/icon-192.png',
+  BASE + '/icon-512.png',
 ];
 
 self.addEventListener('install', event => {
@@ -33,7 +35,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
         return response;
-      }).catch(() => caches.match('/index.html'));
+      }).catch(() => caches.match(BASE + '/index.html'));
     })
   );
 });
