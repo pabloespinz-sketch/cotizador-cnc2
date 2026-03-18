@@ -1,5 +1,5 @@
 const CACHE_NAME = 'cnc-cotizador-v4';
-const BASE = '/cotizador-cnc';
+const BASE = '/cotizador-cnc2';
 const URLS_TO_CACHE = [
   BASE + '/',
   BASE + '/index.html',
